@@ -1,104 +1,87 @@
 // char    *get_next_line(int fd)
 
 #include "get_next_line.h"
-#include <cstddef>
-#include <stdio.h>
-#include <stdlib.h>
-#include <type_traits>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <sys/types.h>
+// #include <time.h>
+// #include <type_traits>
 
-size_t	ft_strlen(const char *s)
+static char *find_next_line(int fd, char *storage, char *buffer)
 {
-	size_t	i;
+	char *str;
+	ssize_t read_value;
+
+	read_value = 1;
+	while (read_value > 0)
+	{
+		read_value = read(fd, buffer, BUFFER_SIZE);
+		if (read_value < 0)
+		{
+			free(storage);
+			return (NULL);
+		}
+		else if(read_value == 0)
+			break ;
+		buffer[read_value] = 0;
+		if (!storage)
+			storage = ft_strdup("");
+		str = storage;
+		storage = ft_strjoin(str, buffer);
+		free (str);
+		str = NULL;
+		if (ft_strchr(buffer, '\n'))
+			break ;
+	}
+	free(buffer);
+	return (storage);
+}
+
+static char *check_line(char *buffer)
+{
+	char *storage;
+	ssize_t	i;
 
 	i = 0;
-	while (s[i] != '\0')
+	while (buffer[i] != '\n' && buffer[i] != 0)
 		i++;
-	return (i);
-}
-
-char	*ft_strjoin(char const *s1, char const *s2)
-{
-	char	*str;
-	size_t	i;
-	size_t	j;
-
-	i = 0;
-	j = 0;
-	if (!s1 && !s2)
+	if (buffer[i] == 0 || buffer[1] == 0)
 		return (NULL);
-	str = (char *)malloc(ft_strlen(s1) + ft_strlen(s2) + 1);
-	if (!str)
+	storage = ft_substr(buffer, i + 1, ft_strlen(buffer) - i);
+	if (!storage)
+	{
+		free(storage);
+		storage = NULL;
+	}
+	buffer[i + 1] = 0;
+	return (storage);
+}
+
+char	*get_next_line(int fd)
+{
+	static char	*storage;
+	char *buffer;
+	char *next_line;
+
+	buffer = malloc((size_t)BUFFER_SIZE + 1);
+	if (!buffer)
 		return (NULL);
-	while (s1[i] != 0)
+	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
 	{
-		str[i] = s1[i];
-		i++;
-	}
-	while (s2[j] != 0)
-	{
-		str[i + j] = s2[j];
-		j++;
-	}
-	str[i + j] = 0;
-	return (str);
-}
-
-
-
-char	*ft_strdup(const char *s)
-{
-	size_t	i;
-	size_t	len;
-	char	*cpy;
-
-	i = 0;
-	len = ft_strlen(s);
-	cpy = (char *)malloc(len + 1);
-	if (!cpy)
+		free(storage);
+		free(buffer);
+		storage = NULL;
+		buffer = NULL;
 		return (NULL);
-	while (s[i])
-	{
-		cpy[i] = s[i];
-		i++;
 	}
-	cpy[i] = 0;
-	return (cpy);
+	next_line = find_next_line(fd, storage, buffer);
+	free(buffer);
+	if (!next_line)
+		return (NULL);
+	storage = check_line(next_line);
+	return (next_line);
 }
 
-
-
-char    *get_next_line(int fd)
-{
-
-    if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) <= 0)
-        return (NULL);
-    
-}
-
-int    fnd_nline(char *str)
-{
-
-}
-
-char    *reading(int fd)
-{
-    char    *storage;
-    char    buf[BUFFER_SIZE + 1];
-
-    read(fd, buf, BUFFER_SIZE);
-    buf[BUFFER_SIZE] = 0;
-    storage = ft_strdup(buf);
-    if (!storage)
-        return (NULL);
-    while (read(fd, buf, BUFFER_SIZE) != 0)
-    {
-        if (fnd_nline != 0)
-            //return the line
-            // clean the storage
-        storage = ft_strjoin(storage, buf);
-    }
-
-}
 
 
 
