@@ -1,4 +1,5 @@
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
+#include <time.h>
 
 char *check_storage(char *storage)
 {
@@ -6,7 +7,7 @@ char *check_storage(char *storage)
 		storage = ft_strdup("");
 	return (storage);
 }
-static char	*reader_function(int fd, char *storage, char *buffer)
+static char	*set_storage(int fd, char *storage, char *buffer)
 {
 	char	*str;
 	ssize_t	read_value;
@@ -15,7 +16,12 @@ static char	*reader_function(int fd, char *storage, char *buffer)
 	while (read_value > 0)
 	{
 		read_value = read(fd, buffer, BUFFER_SIZE);
-		if (read_value == 0)
+		if (read_value < 0)
+		{
+			free(storage);
+			return (NULL);
+		}
+		else if (read_value == 0)
 			break ;
 		buffer[read_value] = 0;
 		storage = check_storage(storage);
@@ -53,25 +59,28 @@ static char	*extract_line(char *next_line)
 
 char	*get_next_line(int fd)
 {
-	static char	*storage;
+	static char	*storage[MAX_FD];
 	char		*buffer;
 	char		*next_line;
 
 	buffer = malloc((size_t)BUFFER_SIZE + 1); 
 	if (!buffer)
 		return (NULL);
-	if (read(fd, 0, 0) < 0 || fd < 0 || BUFFER_SIZE <= 0) 
+	if (read(fd, 0, 0) < 0 || fd < 0 || BUFFER_SIZE <= 0 || fd > MAX_FD) 
 	{
 		free(buffer);
 		buffer = NULL;
-		free(storage);
-		storage = NULL;
+        if (fd > 0 && storage[fd] != NULL)
+        {
+            free(storage[fd]);
+            storage[fd] = NULL;
+        }
 		return (NULL);
 	}
-	next_line = reader_function(fd, storage, buffer);
+	next_line = set_storage(fd, storage[fd], buffer);
 	free(buffer);
 	if (!next_line)
 		return (NULL);
-	storage = extract_line(next_line);
+	storage[fd] = extract_line(next_line);
 	return (next_line);
 }
