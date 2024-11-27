@@ -4,6 +4,8 @@ char *check_storage(char *storage)
 {
 	if (!storage)
 		storage = ft_strdup("");
+	if (!storage)
+		return (NULL);
 	return (storage);
 }
 static char	*reader_function(int fd, char *storage, char *buffer)
@@ -25,6 +27,8 @@ static char	*reader_function(int fd, char *storage, char *buffer)
 		storage = ft_strjoin(str, buffer);
 		free (str);
 		str = NULL;
+		if (!storage)
+			return (NULL);
 		if (ft_strchr(buffer, '\n'))
 			break ;
 	}
