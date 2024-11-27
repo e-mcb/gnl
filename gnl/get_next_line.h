@@ -3,6 +3,9 @@
 # ifndef BUFFER_SIZE
 #  define BUFFER_SIZE 20
 # endif
+# ifndef MAX_FD
+#  define MAX_FD 256
+# endif
 # include <stdlib.h>
 # include <fcntl.h>
 # include <unistd.h>

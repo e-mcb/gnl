@@ -2,15 +2,29 @@
 #include "get_next_line.h"
 #include <stdio.h>
 
-int main()
+int main(void)
 {
-    int fd;
-    char *line;
-    int lines;
-    lines = 1;
-    fd = open("text.txt", O_RDONLY);
+ int  fd;
+ char *line;
+ int  count;
 
-    while ((line = get_next_line(fd)))
-        printf("%d->%s", lines++, line);
-    return 0;
+ count = 0;
+ fd = open("nls.txt", O_RDONLY);
+ if (fd == -1)
+ {
+  printf("Error opening file");
+  return (1);
+ }
+ while (1)
+ {
+  line = get_next_line(fd);
+  if (line == NULL)
+   break ;
+  count++;
+  printf("[%d]:%s\n", count, line);
+  free(line);
+  line = NULL;
+ }
+ close(fd);
+ return (0);
 }

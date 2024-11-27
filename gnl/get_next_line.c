@@ -1,16 +1,15 @@
-// char    *get_next_line(int fd)
-
 #include "get_next_line.h"
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <sys/types.h>
-// #include <time.h>
-// #include <type_traits>
 
-static char *find_next_line(int fd, char *storage, char *buffer)
+char *check_storage(char *storage)
 {
-	char *str;
-	ssize_t read_value;
+	if (!storage)
+		storage = ft_strdup("");
+	return (storage);
+}
+static char	*set_storage(int fd, char *storage, char *buffer)
+{
+	char	*str;
+	ssize_t	read_value;
 
 	read_value = 1;
 	while (read_value > 0)
@@ -21,11 +20,12 @@ static char *find_next_line(int fd, char *storage, char *buffer)
 			free(storage);
 			return (NULL);
 		}
-		else if(read_value == 0)
+		else if (read_value == 0)
 			break ;
 		buffer[read_value] = 0;
+		storage = check_storage(storage);
 		if (!storage)
-			storage = ft_strdup("");
+			return (NULL);
 		str = storage;
 		storage = ft_strjoin(str, buffer);
 		free (str);
@@ -33,55 +33,50 @@ static char *find_next_line(int fd, char *storage, char *buffer)
 		if (ft_strchr(buffer, '\n'))
 			break ;
 	}
-	free(buffer);
 	return (storage);
 }
 
-static char *check_line(char *buffer)
+static char	*extract_line(char *next_line)
 {
-	char *storage;
-	ssize_t	i;
+	char	*storage;
+	size_t	i;
 
 	i = 0;
-	while (buffer[i] != '\n' && buffer[i] != 0)
+	while (next_line[i] != '\n' && next_line[i] != 0)
 		i++;
-	if (buffer[i] == 0 || buffer[1] == 0)
+	if (next_line[i] == 0 || next_line[i + 1] == 0)
 		return (NULL);
-	storage = ft_substr(buffer, i + 1, ft_strlen(buffer) - i);
+	storage = ft_substr(next_line, i + 1, ft_strlen(next_line) - i);
 	if (!storage)
 	{
 		free(storage);
 		storage = NULL;
 	}
-	buffer[i + 1] = 0;
+	next_line[i + 1] = 0;
 	return (storage);
 }
 
 char	*get_next_line(int fd)
 {
 	static char	*storage;
-	char *buffer;
-	char *next_line;
+	char		*buffer;
+	char		*next_line;
 
-	buffer = malloc((size_t)BUFFER_SIZE + 1);
+	buffer = malloc((size_t)BUFFER_SIZE + 1); 
 	if (!buffer)
 		return (NULL);
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+	if (read(fd, 0, 0) < 0 || fd < 0 || BUFFER_SIZE <= 0) 
 	{
-		free(storage);
 		free(buffer);
-		storage = NULL;
 		buffer = NULL;
+		free(storage);
+		storage = NULL;
 		return (NULL);
 	}
-	next_line = find_next_line(fd, storage, buffer);
+	next_line = set_storage(fd, storage, buffer);
 	free(buffer);
 	if (!next_line)
 		return (NULL);
-	storage = check_line(next_line);
+	storage = extract_line(next_line);
 	return (next_line);
 }
-
-
-
-
